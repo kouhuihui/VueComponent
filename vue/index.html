@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Untitled</title>
+   <link href="component/base/checkbox/checkbox.css" rel="stylesheet" />
+   <link href="public/css/bootstrap.css" rel="stylesheet" />
+   <link href="public/css/font-awesome.min.css" rel="stylesheet" />
+</head>
+<body>
+
+<div id="app">
+ <vcheckbox v-ref:secretjob fieldlabel="dsdasd" is-Checked="true" ></vcheckbox>
+ <vbutton theme="primary" text="save"></vbutton>
+</div>
+</body>
+</html>
+
+<script src="node_modules/vue/dist/vue.js" ></script>
+<script src="component/base/checkbox/checkbox.js" ></script>
+<script src="component/base/button/button.js" ></script>
+<script type="text/javascript">
+   Vue.component('vcheckbox', Checkbox)
+   Vue.component('vbutton', Button);
+
+	new Vue({
+		el: '#app',
+      data: {
+      },
+      methods: {
+         init: function() {
+              var refs = this.$refs;
+         }
+      },
+      ready: function(){
+         this.init();
+      }
+	})
+</script>

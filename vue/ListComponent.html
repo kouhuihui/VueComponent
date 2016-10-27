@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Untitled</title>
+</head>
+<style type="text/css">
+   .odd{
+      background-color: white
+   }
+   .even{
+      background-color: #ccc
+   }
+   .yellow{
+      background-color: yellow
+   }
+</style>
+<body>
+
+<div id="app">
+ <vlist :store="mystore" ></vlist>
+</div>
+</body>
+</html>
+
+<script src="node_modules/vue/dist/vue.js" ></script>
+<script type="text/javascript">
+   var VList = Vue.extend({
+         props:['store'],
+         data:function(){
+               return { 
+                  index: -1 
+            }
+         },
+   		template: '<ul><li v-for="item in store" :class="{odd: $index % 2==0 ,even: $index % 2==1,yellow:$index==this.index}">{{index}} {{$index}}{{$index % 2==0}} {{item.name}} {{item.age}} <button @click="doClick($index)">button</button></li></ul>',
+   		methods:{
+   			doClick: function(i){
+   			  this.index = i;
+   			}
+   		}
+   })
+
+   Vue.component('vlist', VList)
+
+	new Vue({
+		el: '#app',
+      data: {
+         mystore:[{
+            name: 'Jay',
+            age: '30'
+         },{
+            name: 'Tom',
+            age: '40'
+         }]
+      }
+	})
+</script>

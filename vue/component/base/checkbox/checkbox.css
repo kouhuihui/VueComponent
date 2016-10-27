@@ -1,0 +1,15 @@
+.v-checkbox {
+    display: inline-block;
+}
+
+.v-checkbox label:hover {
+    color: #1992fd;
+    cursor: pointer;
+ }
+.v-checkbox i {
+    width: 13px;
+    margin-right: 10px;
+    }
+.v-checkbox .fa-check-square-o {
+    color: $#1992fd;
+}

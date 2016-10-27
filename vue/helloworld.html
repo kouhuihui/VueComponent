@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Untitled</title>
+</head>
+
+<body>
+
+<div id="app">
+{{message}}
+<input v-model="message">
+<ul>
+	<li v-for="todo in todos">
+	{{ todo.text }}
+	</li>
+</ul>
+</div>
+</body>
+</html>
+
+<script src="node_modules/vue/dist/vue.js" ></script>
+<script type="text/javascript">
+	new Vue({
+		el: '#app',
+		data: {
+			message: 'hello vue.js',
+			todos:[
+ 				{text: 'Learn JavaScript'},
+ 				{text: 'Learn Vue.js'},
+ 				{text: 'Build Something Awesome'}
+ 			]
+		}
+	})
+</script>

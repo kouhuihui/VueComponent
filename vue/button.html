@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Untitled</title>
+</head>
+
+<body>
+
+<div id="app">
+ <my-component theme="red" text="aaa"></my-component>
+</div>
+</body>
+</html>
+
+<script src="node_modules/vue/dist/vue.js" ></script>
+<script type="text/javascript">
+   var MyComponent = Vue.extend({
+   		props:['theme', 'text'],
+   		template: '<button @click="doClick" :style="{backgroundColor: theme}">{{text}}</button>',
+   		methods:{
+   			doClick: function(){
+   				alert("hi");
+   			}
+   		}
+   })
+
+   Vue.component('my-component', MyComponent)
+
+	new Vue({
+		el: '#app'
+	})
+</script>

@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Untitled</title>
+</head>
+
+<body>
+
+<div id="app">
+  <input v-model="newTodo" v-on:keyup.enter="addTodo">
+  <ul>
+    <li v-for="todo in todos">
+      <span>{{ todo.text }}</span>
+      <button v-on:click="removeTodo($index)">X</button>
+    </li>
+  </ul>
+</div>
+</body>
+</html>
+
+<script src="node_modules/vue/dist/vue.js" ></script>
+<script type="text/javascript">
+		new Vue({
+		  el: '#app',
+		  data: {
+		    newTodo: '',
+		    todos: [
+		      { text: 'Add some todos' }
+		    ]
+		  },
+		  methods: {
+		    addTodo: function () {
+		      var text = this.newTodo.trim()
+		      if (text) {
+		        this.todos.push({ text: text })
+		        this.newTodo = ''
+		      }
+		    },
+		    removeTodo: function (index) {
+		      this.todos.splice(index, 1)
+		    }
+		  }
+		})
+</script>
