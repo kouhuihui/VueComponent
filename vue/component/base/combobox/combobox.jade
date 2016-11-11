@@ -6,8 +6,8 @@
 		div.combobox-field.form-control(:class="{ 'active': expand }")
 			i.fa.fa-search(v-if="isautocomplete")
 			input.form-control(v-model="inputText", :readOnly="!isreadonly")
-			i.fa.fa-search(v-if="isautocomplete")
-		ul
+			i.fa( v-if="!isautocomplete", :class="expand ? 'fa-angle-up' : 'fa-angle-down' ", @click="doClick")
+		ul(v-show="expand")
 			template(v-if="store.length > 0")
 				li(v-for="option in store"){{{ option[vdisplaytext] }}}
 			template(v-else)

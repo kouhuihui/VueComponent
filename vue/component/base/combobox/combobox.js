@@ -18,7 +18,7 @@ var FormMixin = require('../mixin/form');
 
 var Combobox = Vue.extend({	
     mixins: [FormMixin],
-	props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext'],
+	props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext','allowedit'],
 	template: tpl(),
 	data: function () {
 		return {
@@ -33,9 +33,20 @@ var Combobox = Vue.extend({
             },
             vdisplayvalue: this.displayvalue || 'value',
             vdisplaytext: this.displaytext || 'text',
+            isautocomplete: false,
+            expand: false,
+            isreadonly: this.allowedit || false,
 		}
 	},
 	methods: {
+		init:function(){
+			this.$body = $(this.$el);
+			this.$input = this.$body.find('input');
+		},
+		doClick:function(){
+			this.$input.focus();
+			this.expand = !this.expand;
+		}
 	}
 })
 

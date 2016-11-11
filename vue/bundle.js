@@ -787,7 +787,7 @@
 
 	var Combobox = Vue.extend({	
 	    mixins: [FormMixin],
-		props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext'],
+		props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext','allowedit'],
 		template: tpl(),
 		data: function () {
 			return {
@@ -802,9 +802,20 @@
 	            },
 	            vdisplayvalue: this.displayvalue || 'value',
 	            vdisplaytext: this.displaytext || 'text',
+	            isautocomplete: false,
+	            expand: false,
+	            isreadonly: this.allowedit || false,
 			}
 		},
 		methods: {
+			init:function(){
+				this.$body = $(this.$el);
+				this.$input = this.$body.find('input');
+			},
+			doClick:function(){
+				this.$input.focus();
+				this.expand = !this.expand;
+			}
 		}
 	})
 
@@ -845,7 +856,7 @@
 
 
 	// module
-	exports.push([module.id, ".combobox {\r\n    height: 40px;\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.combobox>div {\r\n    float: left\r\n}\r\n\r\n.combobox .combobox-label {\r\n    padding-top: 10px;\r\n}\r\n\r\n.combobox .combobox-body {\r\n    height: 100%;\r\n    position: relative;\r\n}\r\n\r\n.combobox .combobox-body ul {\r\n    position: absolute;\r\n    width: 100%;\r\n    max-height: 210px;\r\n    overflow-y: scroll;\r\n    margin: 0;\r\n    padding: 5px 0;\r\n    list-style: none;\r\n    border: 1px solid #1992fd;\r\n    z-index: 99999;\r\n    cursor: pointer;\r\n    background-color: #fff\r\n}\r\n\r\n.combobox .combobox-body ul li {\r\n    padding-left: 10px\r\n}\r\n\r\n.combobox .combobox-body ul li.selected,.combobox .combobox-body ul li:hover {\r\n    color: #fff;\r\n    background-color: #1992fd\r\n}\r\n\r\n.combobox .combobox-body .combobox-field.active {\r\n    border-color: #1992fd\r\n}\r\n\r\n.combobox .combobox-body .combobox-field input {\r\n    display: inline-block;\r\n    width: 100%;\r\n    height: 100%;\r\n    padding-right: 20px;\r\n    border: none\r\n}\r\n.combobox .combobox-body .combobox-field i {\r\n    position: absolute;\r\n    top: 30%;\r\n    right: 8px\r\n}\r\n.combobox .combobox-body span {\r\n    color: #f96868\r\n}\r\n\r\n.combobox .combobox-body.autocomplete .combobox-field input {\r\n    padding-right: 0;\r\n    padding-left: 25px\r\n}\r\n\r\n.combobox .combobox-body.autocomplete .combobox-field i {\r\n    width: 20px;\r\n    left: 8px;\r\n    top: 32%\r\n}\r\n\r\n.combobox .required-tip {\r\n    color: #f96868;\r\n    margin-right: 3px\r\n}\r\n", ""]);
+	exports.push([module.id, ".combobox {\r\n    height: 40px;\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.combobox>div {\r\n    float: left\r\n}\r\n\r\n.combobox .combobox-label {\r\n    padding-top: 10px;\r\n}\r\n\r\n.combobox .combobox-body {\r\n    height: 100%;\r\n    position: relative;\r\n}\r\n\r\n.combobox .combobox-body ul {\r\n    position: absolute;\r\n    width: 100%;\r\n    max-height: 210px;\r\n    overflow-y: scroll;\r\n    margin: 0;\r\n    padding: 5px 0;\r\n    list-style: none;\r\n    border: 1px solid #1992fd;\r\n    z-index: 99999;\r\n    cursor: pointer;\r\n    background-color: #fff\r\n}\r\n\r\n.combobox .combobox-body ul li {\r\n    padding-left: 10px\r\n}\r\n\r\n.combobox .combobox-body ul li.selected,.combobox .combobox-body ul li:hover {\r\n    color: #fff;\r\n    background-color: #1992fd\r\n}\r\n\r\n.combobox .combobox-body .combobox-field {\r\n    height: 100%;\r\n    position: relative;\r\n    padding-left: 0;\r\n}\r\n\r\n.combobox .combobox-body .combobox-field.active {\r\n    border-color: #1992fd\r\n}\r\n\r\n.combobox .combobox-body .combobox-field input {\r\n    display: inline-block;\r\n    width: 100%;\r\n    height: 100%;\r\n    padding-right: 20px;\r\n    border: none\r\n}\r\n.combobox .combobox-body .combobox-field i {\r\n    position: absolute;\r\n    top: 30%;\r\n    right: 8px\r\n}\r\n.combobox .combobox-body span {\r\n    color: #f96868\r\n}\r\n\r\n.combobox .combobox-body.autocomplete .combobox-field input {\r\n    padding-right: 0;\r\n    padding-left: 25px\r\n}\r\n\r\n.combobox .combobox-body.autocomplete .combobox-field i {\r\n    width: 20px;\r\n    left: 8px;\r\n    top: 32%\r\n}\r\n\r\n.combobox .required-tip {\r\n    color: #f96868;\r\n    margin-right: 3px\r\n}\r\n", ""]);
 
 	// exports
 
@@ -861,7 +872,7 @@
 	var jade_mixins = {};
 	var jade_interp;
 
-	buf.push("<div class=\"combobox\"><div v-if=\"isshowlabel\" :style=\"labelstyle\" class=\"combobox-label\"><span v-if=\"isrequired\" class=\"required-tip\">*</span>{{ labeltext }}:</div><div :style=\"bodystyle\" class=\"combobox-body\"><div :class=\"{ 'active': expand }\" class=\"combobox-field form-control\"><i v-if=\"isautocomplete\" class=\"fa fa-search\"></i><input v-model=\"inputText\" :readOnly=\"!isreadonly\" class=\"form-control\"><i v-if=\"isautocomplete\" class=\"fa fa-search\"></i></div><ul><template v-if=\"store.length &gt; 0\"><li v-for=\"option in store\">{{{ option[vdisplaytext] }}}</li></template><template v-else><li v-else>暂无数据</li></template></ul></div></div>");;return buf.join("");
+	buf.push("<div class=\"combobox\"><div v-if=\"isshowlabel\" :style=\"labelstyle\" class=\"combobox-label\"><span v-if=\"isrequired\" class=\"required-tip\">*</span>{{ labeltext }}:</div><div :style=\"bodystyle\" class=\"combobox-body\"><div :class=\"{ 'active': expand }\" class=\"combobox-field form-control\"><i v-if=\"isautocomplete\" class=\"fa fa-search\"></i><input v-model=\"inputText\" :readOnly=\"!isreadonly\" class=\"form-control\"><i v-if=\"!isautocomplete\" :class=\"expand ? 'fa-angle-up' : 'fa-angle-down' \" @click=\"doClick\" class=\"fa\"></i></div><ul v-show=\"expand\"><template v-if=\"store.length &gt; 0\"><li v-for=\"option in store\">{{{ option[vdisplaytext] }}}</li></template><template v-else><li v-else>暂无数据</li></template></ul></div></div>");;return buf.join("");
 	}
 
 /***/ },
