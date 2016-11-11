@@ -3,7 +3,6 @@
 <html>
 <head>
 	<title>Untitled</title>
-   <link href="component/base/checkbox/checkbox.css" rel="stylesheet" />
    <link href="public/css/bootstrap.css" rel="stylesheet" />
    <link href="public/css/font-awesome.min.css" rel="stylesheet" />
 </head>
@@ -12,20 +11,28 @@
 <div id="app">
  <vcheckbox v-ref:secretjob fieldlabel="dsdasd" is-Checked="true" ></vcheckbox>
  <vbutton theme="primary" text="save"></vbutton>
+ <vcombobox filedlabel="aaa" :store="jobStatusStore" width="200"></vcombobox>
 </div>
 </body>
 </html>
 
 <script src="node_modules/vue/dist/vue.js" ></script>
-<script src="component/base/checkbox/checkbox.js" ></script>
-<script src="component/base/button/button.js" ></script>
-<script type="text/javascript">
-   Vue.component('vcheckbox', Checkbox)
-   Vue.component('vbutton', Button);
+<script src="./bundle.js" ></script>
 
+<script type="text/javascript">   
 	new Vue({
 		el: '#app',
       data: {
+         jobStatusStore: [{
+            value: '',
+            text: '选择职位状态'
+        },{
+            value: 1,
+            text: '进行中'
+        },{
+            value: 2,
+            text: '已关闭'
+        }]
       },
       methods: {
          init: function() {

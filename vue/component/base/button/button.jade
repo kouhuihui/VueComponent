@@ -1,0 +1,3 @@
+div.v-button.btn(:class="'btn-' + filling + ' btn-' + theme + ' btn-' + size + (disabled ? ' disabled' : '')", @click="doClick")
+	i.fa(v-if="icon", :class="icon")
+	span(v-text="text")

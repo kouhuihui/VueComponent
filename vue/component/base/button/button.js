@@ -10,8 +10,10 @@
 *       text: 按钮文本，默认为‘确定’
 *       icon: 按钮图标
 */
-var tpl = "<div class=\"v-button btn\" :class=\"'btn-'+ filling +' btn-' + theme +' btn-' + size + (disabled ? ' disabled' : '')\" @click=\"doClick\">"+ 
+/*var tpl = "<div class=\"v-button btn\" :class=\"'btn-'+ filling +' btn-' + theme +' btn-' + size + (disabled ? ' disabled' : '')\" @click=\"doClick\">"+ 
 			"<i class=\"fa\" v-if=\"icon\" :class=\"icon\"></i><span v-text=\"text\"></span></div>";
+*/
+var tpl = require('./button.jade');
 
 var Button = Vue.extend({
 	props: {
@@ -21,7 +23,7 @@ var Button = Vue.extend({
 		disabled: {default: false},
 		text: {default: '确定'}
 	},
-	template: tpl,
+	template: tpl(),
 	methods:{
 		doClick: function(ev){
 			if(this.disabled){
@@ -37,3 +39,5 @@ var Button = Vue.extend({
 		}
 	}
 })
+
+module.exports = Vue.component('vbutton', Button);

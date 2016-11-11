@@ -1,0 +1,4 @@
+div.v-checkbox
+    label(@click="doClick($event)")
+        i.fa(:class="isChecked ? 'fa-check-square-o': 'fa-square-o'")
+        span(v-if="!hidelabel") {{{ fieldlabel }}}

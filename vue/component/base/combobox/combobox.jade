@@ -1,0 +1,15 @@
+﻿div.combobox
+	div.combobox-label(v-if="isshowlabel",:style="labelstyle")
+		span.required-tip(v-if="isrequired") *
+		| {{ labeltext }}:
+	div.combobox-body(:style="bodystyle")
+		div.combobox-field.form-control(:class="{ 'active': expand }")
+			i.fa.fa-search(v-if="isautocomplete")
+			input.form-control(v-model="inputText", :readOnly="!isreadonly")
+			i.fa.fa-search(v-if="isautocomplete")
+		ul
+			template(v-if="store.length > 0")
+				li(v-for="option in store"){{{ option[vdisplaytext] }}}
+			template(v-else)
+				li(v-else) 暂无数据
+		

@@ -1,5 +1,5 @@
-var tpl = "<div class=\"v-checkbox\" @click=\"doClick($event)\"><label><i class=\"fa\" :class=\"isChecked ? 'fa-check-square-o' :'fa-square-o'\">"
- + "</i><span v-if=\"!hidelabel\">{{fieldlabel}}</span></label></div>";
+require("./Checkbox.css");
+var tpl = require("./Checkbox.jade");
 
 var Checkbox = Vue.extend({
 	props: {
@@ -7,7 +7,7 @@ var Checkbox = Vue.extend({
 		hidelabel: {default: false},
 		isChecked: {default: false}
 	},
-	template: tpl,
+	template: tpl(),
 	methods:{
 		init: function(){
 			this.hidelabel = (this.hidelabel === 'false' || this.hidelabel === false) ? false : true;
@@ -24,3 +24,5 @@ var Checkbox = Vue.extend({
 		}
 	}
 })
+
+module.exports = Vue.component('vcheckbox', Checkbox);
