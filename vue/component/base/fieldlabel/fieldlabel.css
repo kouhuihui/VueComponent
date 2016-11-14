@@ -1,0 +1,8 @@
+.fieldlabel{
+	padding-top: 10px;
+}
+
+.fieldlabel .required-tip{
+	color: red;
+	margin-top: 3px;
+}
