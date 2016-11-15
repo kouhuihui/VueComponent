@@ -36,6 +36,8 @@ var Combobox = Vue.extend({
             isautocomplete: false,
             expand: false,
             isreadonly: this.allowedit || false,
+            inputText: '',
+            selected: ''
 		}
 	},
 	methods: {
@@ -45,7 +47,31 @@ var Combobox = Vue.extend({
 		},
 		doClick:function(){
 			this.$input.focus();
-			this.expand = !this.expand;
+			if(this.isautocomplete){
+				this.expand = false;
+			}else{
+				this.expand = !this.expand;
+			}
+		},
+		doSearch:function(){
+
+		},
+		doSelect:function(val, index, item){
+			var text = item[this.vdisplaytext];
+			this.setValue(val);
+			this.$input.val(text);
+			this.inputText = text;
+			this.selected = index;
+			this.doBlur();
+		},
+		doBlur:function(){
+			this.packUp();
+			if(this.getValue() === ''){
+				this.inputText = '';
+			}
+		},
+		packUp:function(){
+			this.expand = false;
 		}
 	}
 })

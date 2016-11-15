@@ -5,11 +5,11 @@
 	div.combobox-body(:style="bodystyle")
 		div.combobox-field.form-control(:class="{ 'active': expand }")
 			i.fa.fa-search(v-if="isautocomplete")
-			input.form-control(v-model="inputText", :readOnly="!isreadonly")
+			input.form-control(v-model="inputText", :readOnly="!isreadonly", @input="@doSearch")
 			i.fa( v-if="!isautocomplete", :class="expand ? 'fa-angle-up' : 'fa-angle-down' ", @click="doClick")
 		ul(v-show="expand")
 			template(v-if="store.length > 0")
-				li(v-for="option in store"){{{ option[vdisplaytext] }}}
+				li(v-for="option in store", :value="option[vdisplayvalue]", @mousedown="doSelect(option[vdisplayvalue], $index, option)", :class="selected === $index ? 'selected' : '' "){{{ option[vdisplaytext] }}}
 			template(v-else)
 				li(v-else) 暂无数据
 		

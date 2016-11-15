@@ -805,6 +805,8 @@
 	            isautocomplete: false,
 	            expand: false,
 	            isreadonly: this.allowedit || false,
+	            inputText: '',
+	            selected: ''
 			}
 		},
 		methods: {
@@ -814,7 +816,31 @@
 			},
 			doClick:function(){
 				this.$input.focus();
-				this.expand = !this.expand;
+				if(this.isautocomplete){
+					this.expand = false;
+				}else{
+					this.expand = !this.expand;
+				}
+			},
+			doSearch:function(){
+
+			},
+			doSelect:function(val, index, item){
+				var text = item[this.vdisplaytext];
+				this.setValue(val);
+				this.$input.val(text);
+				this.inputText = text;
+				this.selected = index;
+				this.doBlur();
+			},
+			doBlur:function(){
+				this.packUp();
+				if(this.getValue() === ''){
+					this.inputText = '';
+				}
+			},
+			packUp:function(){
+				this.expand = false;
 			}
 		}
 	})
@@ -872,7 +898,7 @@
 	var jade_mixins = {};
 	var jade_interp;
 
-	buf.push("<div class=\"combobox\"><div v-if=\"isshowlabel\" :style=\"labelstyle\" class=\"combobox-label\"><span v-if=\"isrequired\" class=\"required-tip\">*</span>{{ labeltext }}:</div><div :style=\"bodystyle\" class=\"combobox-body\"><div :class=\"{ 'active': expand }\" class=\"combobox-field form-control\"><i v-if=\"isautocomplete\" class=\"fa fa-search\"></i><input v-model=\"inputText\" :readOnly=\"!isreadonly\" class=\"form-control\"><i v-if=\"!isautocomplete\" :class=\"expand ? 'fa-angle-up' : 'fa-angle-down' \" @click=\"doClick\" class=\"fa\"></i></div><ul v-show=\"expand\"><template v-if=\"store.length &gt; 0\"><li v-for=\"option in store\">{{{ option[vdisplaytext] }}}</li></template><template v-else><li v-else>暂无数据</li></template></ul></div></div>");;return buf.join("");
+	buf.push("<div class=\"combobox\"><div v-if=\"isshowlabel\" :style=\"labelstyle\" class=\"combobox-label\"><span v-if=\"isrequired\" class=\"required-tip\">*</span>{{ labeltext }}:</div><div :style=\"bodystyle\" class=\"combobox-body\"><div :class=\"{ 'active': expand }\" class=\"combobox-field form-control\"><i v-if=\"isautocomplete\" class=\"fa fa-search\"></i><input v-model=\"inputText\" :readOnly=\"!isreadonly\" @input=\"@doSearch\" class=\"form-control\"><i v-if=\"!isautocomplete\" :class=\"expand ? 'fa-angle-up' : 'fa-angle-down' \" @click=\"doClick\" class=\"fa\"></i></div><ul v-show=\"expand\"><template v-if=\"store.length &gt; 0\"><li v-for=\"option in store\" :value=\"option[vdisplayvalue]\" @mousedown=\"doSelect(option[vdisplayvalue], $index, option)\" :class=\"selected === $index ? 'selected' : '' \">{{{ option[vdisplaytext] }}}</li></template><template v-else><li v-else>暂无数据</li></template></ul></div></div>");;return buf.join("");
 	}
 
 /***/ },
