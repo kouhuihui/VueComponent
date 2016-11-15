@@ -47,6 +47,7 @@
 	__webpack_require__(1);
 	__webpack_require__(5);
 	__webpack_require__(11);
+	__webpack_require__(18);
 
 /***/ },
 /* 1 */
@@ -975,6 +976,105 @@
 
 	module.exports = Class;
 
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	__webpack_require__(19);
+	var tpl = __webpack_require__(21);
+	/*
+	* mixin
+	*/
+	var Basemixin = __webpack_require__(15);
+
+	var FieldLabel = Vue.extend({
+		mixins: [Basemixin],
+		props:  {
+	        'isshowlabel': {
+	            type: Boolean,
+	            default: true
+	        }, 
+	        'required': {
+	            type: Boolean,
+	            default: false
+	        }, 
+	        'text': {
+	            type: String
+	        }, 
+	        'width': {
+	            type: String,
+	            default: '200px'
+	        }
+	    },
+		template: tpl(),
+		data: function () {
+			return {
+				style: {
+					width: this.transformCssUnit(this.width)
+				}
+			}
+		},
+		methods:{
+
+		}
+	})
+
+	module.exports = Vue.component('vfieldlabel', FieldLabel);
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(20);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(9)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./fieldlabel.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./fieldlabel.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(8)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".fieldlabel{\r\n\tpadding-top: 10px;\r\n}\r\n\r\n.fieldlabel .required-tip{\r\n\tcolor: red;\r\n\tmargin-top: 3px;\r\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var jade = __webpack_require__(3);
+
+	module.exports = function template(locals) {
+	var buf = [];
+	var jade_mixins = {};
+	var jade_interp;
+
+	buf.push("<div :style=\"style\" class=\"fieldlabel\"><span v-if=\"required\" class=\"required-tip\">*</span>{{text}}</div>");;return buf.join("");
+	}
 
 /***/ }
 /******/ ]);
