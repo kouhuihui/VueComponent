@@ -18,7 +18,7 @@ var FormMixin = require('../mixin/form');
 
 var Combobox = Vue.extend({	
     mixins: [FormMixin],
-	props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext','allowedit'],
+	props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext','allowedit', 'isfilter', 'isremote', 'url', 'isselectall', 'afterload'],
 	template: tpl(),
 	data: function () {
 		return {
@@ -37,15 +37,18 @@ var Combobox = Vue.extend({
             expand: false,
             isreadonly: this.allowedit || false,
             inputText: '',
-            selected: ''
+            selected: '',
+            visselectall: this.isselectall === undefined ? true : this.isselectall,
+            vselectalltext: this.selectalltext || '选择所有'
 		}
 	},
 	methods: {
-		init:function(){
+		init: function(){
 			this.$body = $(this.$el);
 			this.$input = this.$body.find('input');
+			this.loadData();
 		},
-		doClick:function(){
+		doClick: function(){
 			this.$input.focus();
 			if(this.isautocomplete){
 				this.expand = false;
@@ -53,10 +56,21 @@ var Combobox = Vue.extend({
 				this.expand = !this.expand;
 			}
 		},
-		doSearch:function(){
-
+		doSearch: function(){
+			if(this.isfilter){
+  				var arr = [];
+                for (var i = 0, items = this.originStore, len = items.length; i < len; i++) {
+                    if (items[i][this.vdisplaytext].toLowerCase().trim().indexOf(this.inputText.toLowerCase().trim()) !== -1) {
+                        arr.push(items[i]);
+                    }
+                }
+                this.store = arr;
+                this.selected = '';
+                this.dropDown();
+                this.isReset = false;
+			}
 		},
-		doSelect:function(val, index, item){
+		doSelect: function(val, index, item){
 			var text = item[this.vdisplaytext];
 			this.setValue(val);
 			this.$input.val(text);
@@ -64,14 +78,67 @@ var Combobox = Vue.extend({
 			this.selected = index;
 			this.doBlur();
 		},
-		doBlur:function(){
+		doBlur: function(){
 			this.packUp();
 			if(this.getValue() === ''){
 				this.inputText = '';
 			}
 		},
-		packUp:function(){
+		dropDown: function(){
+			if(this.isautocomplete && this.inputText == ''){
+                this.expand = false;
+            }else{
+                this.expand = true;
+            }
+		},
+		packUp: function(){
 			this.expand = false;
+		},
+		getStoreLocal: function(){
+			this.store = this.store || '';
+			if(this.store instanceof Array){
+				return this.store;
+			}
+
+			var item, rec, arr = [], items = this.store.split('|');
+			for(var i = 0, len = items.length; i < len; i++){
+				item = items[i];
+				rec = item.split(',');
+				arr.push({
+					value: rec[0],
+					text: rec[1]
+				})
+			}
+			this.store = arr;
+			this.originStore = arr;
+			return arr;
+		},
+		getStoreAsync: function(){
+			var _self = this;
+			$.get(this.url, function(rtn){
+				if (!rtn.succeeded) {
+                    return parse.showError(rtn);
+                }
+                if (_self.visselectall) {
+                	rtn.data.unshift({
+                        value: _self.selectallvalue,
+                        text: _self.vselectalltext
+                    });
+                }
+                var data = rtn.data;
+                _self.store = data;
+                _self.originStore = data;
+                Vue.nextTick(function () {
+                    _self.afterload && _self.afterload(rtn.data);
+                })
+			})
+		},
+		loadData: function(){
+			if(this.isremote){
+				return this.getStoreAsync();
+			}else{
+				return this.getStoreLocal();
+			}
 		}
 	}
 })

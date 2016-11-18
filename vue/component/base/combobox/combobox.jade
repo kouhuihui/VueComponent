@@ -5,7 +5,7 @@
 	div.combobox-body(:style="bodystyle")
 		div.combobox-field.form-control(:class="{ 'active': expand }")
 			i.fa.fa-search(v-if="isautocomplete")
-			input.form-control(v-model="inputText", :readOnly="!isreadonly", @input="@doSearch")
+			input.form-control(v-model="inputText", :readOnly="!isreadonly", @input="doSearch | debounce 300", @blur="doBlur")
 			i.fa( v-if="!isautocomplete", :class="expand ? 'fa-angle-up' : 'fa-angle-down' ", @click="doClick")
 		ul(v-show="expand")
 			template(v-if="store.length > 0")

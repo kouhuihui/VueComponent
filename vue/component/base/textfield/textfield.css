@@ -1,0 +1,53 @@
+.textfield {
+    display: table;
+    height: 40px;
+    margin-bottom: 20px
+}
+
+.textfield.auto-height {
+    height: auto
+}
+
+.textfield>div {
+    float: left
+}
+
+.textfield .field-body input {
+    margin-bottom: 5px
+}
+
+.textfield .field-body span {
+    color: #f96868
+}
+
+.textfield .field-body .body-content {
+    position: relative
+}
+
+.textfield .field-body .numchange-tip {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 9pt;
+    color: #d1d1d1
+}
+
+.textfield .after-tpl {
+    margin-top: 10px;
+    margin-left: 10px
+}
+
+.textfield textarea {
+    border: 1px solid transparent;
+    height: auto;
+    padding: 10px
+}
+
+.field-label {
+    padding-top: 10px
+}
+
+.field-label .required-tip {
+    color: #f96868;
+    margin-right: 3px
+}

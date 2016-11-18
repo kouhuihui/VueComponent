@@ -48,6 +48,8 @@
 	__webpack_require__(5);
 	__webpack_require__(11);
 	__webpack_require__(18);
+	__webpack_require__(22);
+	__webpack_require__(26);
 
 /***/ },
 /* 1 */
@@ -788,7 +790,7 @@
 
 	var Combobox = Vue.extend({	
 	    mixins: [FormMixin],
-		props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext','allowedit'],
+		props: ['width', 'store', 'filedlabel', 'hidelabel', 'placeholder', 'required', 'labelwidth','displayvalue', 'displaytext','allowedit', 'isfilter', 'isremote', 'url', 'isselectall', 'afterload'],
 		template: tpl(),
 		data: function () {
 			return {
@@ -807,15 +809,18 @@
 	            expand: false,
 	            isreadonly: this.allowedit || false,
 	            inputText: '',
-	            selected: ''
+	            selected: '',
+	            visselectall: this.isselectall === undefined ? true : this.isselectall,
+	            vselectalltext: this.selectalltext || '选择所有'
 			}
 		},
 		methods: {
-			init:function(){
+			init: function(){
 				this.$body = $(this.$el);
 				this.$input = this.$body.find('input');
+				this.loadData();
 			},
-			doClick:function(){
+			doClick: function(){
 				this.$input.focus();
 				if(this.isautocomplete){
 					this.expand = false;
@@ -823,10 +828,21 @@
 					this.expand = !this.expand;
 				}
 			},
-			doSearch:function(){
-
+			doSearch: function(){
+				if(this.isfilter){
+	  				var arr = [];
+	                for (var i = 0, items = this.originStore, len = items.length; i < len; i++) {
+	                    if (items[i][this.vdisplaytext].toLowerCase().trim().indexOf(this.inputText.toLowerCase().trim()) !== -1) {
+	                        arr.push(items[i]);
+	                    }
+	                }
+	                this.store = arr;
+	                this.selected = '';
+	                this.dropDown();
+	                this.isReset = false;
+				}
 			},
-			doSelect:function(val, index, item){
+			doSelect: function(val, index, item){
 				var text = item[this.vdisplaytext];
 				this.setValue(val);
 				this.$input.val(text);
@@ -834,14 +850,67 @@
 				this.selected = index;
 				this.doBlur();
 			},
-			doBlur:function(){
+			doBlur: function(){
 				this.packUp();
 				if(this.getValue() === ''){
 					this.inputText = '';
 				}
 			},
-			packUp:function(){
+			dropDown: function(){
+				if(this.isautocomplete && this.inputText == ''){
+	                this.expand = false;
+	            }else{
+	                this.expand = true;
+	            }
+			},
+			packUp: function(){
 				this.expand = false;
+			},
+			getStoreLocal: function(){
+				this.store = this.store || '';
+				if(this.store instanceof Array){
+					return this.store;
+				}
+
+				var item, rec, arr = [], items = this.store.split('|');
+				for(var i = 0, len = items.length; i < len; i++){
+					item = items[i];
+					rec = item.split(',');
+					arr.push({
+						value: rec[0],
+						text: rec[1]
+					})
+				}
+				this.store = arr;
+				this.originStore = arr;
+				return arr;
+			},
+			getStoreAsync: function(){
+				var _self = this;
+				$.get(this.url, function(rtn){
+					if (!rtn.succeeded) {
+	                    return parse.showError(rtn);
+	                }
+	                if (_self.visselectall) {
+	                	rtn.data.unshift({
+	                        value: _self.selectallvalue,
+	                        text: _self.vselectalltext
+	                    });
+	                }
+	                var data = rtn.data;
+	                _self.store = data;
+	                _self.originStore = data;
+	                Vue.nextTick(function () {
+	                    _self.afterload && _self.afterload(rtn.data);
+	                })
+				})
+			},
+			loadData: function(){
+				if(this.isremote){
+					return this.getStoreAsync();
+				}else{
+					return this.getStoreLocal();
+				}
 			}
 		}
 	})
@@ -899,7 +968,7 @@
 	var jade_mixins = {};
 	var jade_interp;
 
-	buf.push("<div class=\"combobox\"><div v-if=\"isshowlabel\" :style=\"labelstyle\" class=\"combobox-label\"><span v-if=\"isrequired\" class=\"required-tip\">*</span>{{ labeltext }}:</div><div :style=\"bodystyle\" class=\"combobox-body\"><div :class=\"{ 'active': expand }\" class=\"combobox-field form-control\"><i v-if=\"isautocomplete\" class=\"fa fa-search\"></i><input v-model=\"inputText\" :readOnly=\"!isreadonly\" @input=\"@doSearch\" class=\"form-control\"><i v-if=\"!isautocomplete\" :class=\"expand ? 'fa-angle-up' : 'fa-angle-down' \" @click=\"doClick\" class=\"fa\"></i></div><ul v-show=\"expand\"><template v-if=\"store.length &gt; 0\"><li v-for=\"option in store\" :value=\"option[vdisplayvalue]\" @mousedown=\"doSelect(option[vdisplayvalue], $index, option)\" :class=\"selected === $index ? 'selected' : '' \">{{{ option[vdisplaytext] }}}</li></template><template v-else><li v-else>暂无数据</li></template></ul></div></div>");;return buf.join("");
+	buf.push("<div class=\"combobox\"><div v-if=\"isshowlabel\" :style=\"labelstyle\" class=\"combobox-label\"><span v-if=\"isrequired\" class=\"required-tip\">*</span>{{ labeltext }}:</div><div :style=\"bodystyle\" class=\"combobox-body\"><div :class=\"{ 'active': expand }\" class=\"combobox-field form-control\"><i v-if=\"isautocomplete\" class=\"fa fa-search\"></i><input v-model=\"inputText\" :readOnly=\"!isreadonly\" @input=\"doSearch | debounce 300\" @blur=\"doBlur\" class=\"form-control\"><i v-if=\"!isautocomplete\" :class=\"expand ? 'fa-angle-up' : 'fa-angle-down' \" @click=\"doClick\" class=\"fa\"></i></div><ul v-show=\"expand\"><template v-if=\"store.length &gt; 0\"><li v-for=\"option in store\" :value=\"option[vdisplayvalue]\" @mousedown=\"doSelect(option[vdisplayvalue], $index, option)\" :class=\"selected === $index ? 'selected' : '' \">{{{ option[vdisplaytext] }}}</li></template><template v-else><li v-else>暂无数据</li></template></ul></div></div>");;return buf.join("");
 	}
 
 /***/ },
@@ -1074,6 +1143,433 @@
 	var jade_interp;
 
 	buf.push("<div :style=\"style\" class=\"fieldlabel\"><span v-if=\"required\" class=\"required-tip\">*</span>{{text}}</div>");;return buf.join("");
+	}
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	* 输入框组件: textfield
+	* @params:
+	*       val: 输入值
+	*       type: 输入框类型，默认为text
+	*       width: 输入框宽度，默认为200px
+	*       fieldlabel：前置label名
+	*       hidelabel: 是否隐藏label，默认为false
+	*       labelwidth：输入框对应label宽度
+	*       placeholder: 空白时显示的提示文案
+	*       required: 是否必填，默认为false
+	*       isempty: 是否为空，默认为false
+	*       regex: 正则校验
+	*       validated: 校验是否通过，默认为true
+	*       rows: 当type为textarea时行高，默认为6行
+	*       maxlength: 最大字数
+	*       showchange: 是否显示》还可以输入X个字 ，默认false
+	*       
+	*/
+
+	__webpack_require__(23);
+	var tpl = __webpack_require__(25);
+
+	/*
+	* mixin
+	*/
+	var FormMixin = __webpack_require__(15);
+
+	/*
+	* 依赖base组件
+	*/
+	__webpack_require__(18);
+
+	var Textfield = Vue.extend({
+	    mixins: [FormMixin],
+	    props: ['width', 'val', 'name', 'type', 'readonly', 'hidelabel', 'fieldlabel', 'labelwidth', 'placeholder', 'required', 'emptytext', 'validatetext', 'regex', 'rows', 'maxlength', 'showchange', 'displaytext', 'filetype', 'filemaxsize', 'maxupload', 'action'],
+	    template: tpl(),
+	    data: function(){
+	        return {
+	            vtype: this.type || 'text',
+	            pholder:  this.placeholder,
+	            isrequired: this.required && this.required !== 'false' ? true : false,
+	            isempty: false,
+	            validated: true,
+	            showchange: this.showchange || false,
+	            contentlength: !isNaN(this.maxlength) ? this.maxlength : 0,
+	            vvalidatetext: this.validatetext || '格式不正确',
+	            displaytext: this.displaytext || '请上传附件',
+	            maxUploadNum: parseInt(this.maxupload, 10) || 0,
+	            currentUploadNum: 0,
+	            filetype: this.filetype || '',
+	            filemaxsize: this.filemaxsize || 0,           
+	            rows: this.rows || 6,
+	            bodystyle: {
+	                width:  this.transformCssUnit(this.width || '60px')
+	            }
+	        }
+	    },
+	    methods: {
+	        init: function(){
+	            if(this.type === 'file'){
+	                var _self = this;
+	                this.fileForm = $(this.$el).find('form');
+	                this.fileInput = this.fileForm.find('input[type="file"]');
+	                this.fileInput.attr('accept', this.filetype);
+	                this.fileForm.ajaxForm({
+	                    beforeSubmit: function () {
+	                        if (_self.maxUploadNum === 0 && _self.filemaxsize === 0) {
+	                            return true;
+	                        }
+	                        if (_self.checkValueBeforeUpload() === false) {
+	                            return false;
+	                        }                        
+	                    },
+	                    success: function (rtn) {
+	                        try {
+	                            rtn = JSON.parse(rtn);
+	                        }catch(err){
+	                            rtn = rtn || {};
+	                        }
+	                        rtn.data = rtn.data || {};
+	                        _self.val = rtn.data.url || '';
+	                        _self.doValidate();
+	                        _self.$dispatch('fileupload', rtn);
+	                    }
+	                });
+	            }
+	            this.$body = $(this.$el).find('.form-control');
+	            this.regex = this.regex && new RegExp(this.regex);
+	        },
+	        /*
+	        * 添加限制字数处理逻辑
+	        */
+	        computeNum: function(val){
+	            if(!this.maxlength){
+	                return;
+	            }
+	            this.contentlength = this.maxlength - val.length;
+	            if(this.contentlength <= 0){
+	                var substringVal = val.substring(0,this.maxlength);
+	                this.setValue(substringVal);
+	                this.contentlength = 0;
+	            }          
+	        },
+	        setContentLength: function(val){
+	            if(!this.maxlength || val === undefined || val === 'undefined' || val === null){
+	                return;
+	            }   
+	            this.contentlength = this.maxlength - val.length;
+	        },
+	        focus: function(){
+	            this.$body && this.$body.focus();
+	        },
+	        selectAll: function(){
+	            this.$body && this.$body.select();
+	        },
+	        /*
+	        * 为空检测
+	        */
+	        emptyCheck: function(){
+	            if(!this.isrequired){
+	                this.isempty = false;
+	                return true;
+	            }
+	            if(this.val === '' || this.val === undefined || this.val === null){
+	                this.isempty = true;
+	                this.vvalidatetext = this.emptytext;
+	            }else{
+	                this.isempty = false;
+	            }
+	            return !this.isempty;
+	        },
+	        /*
+	        * 正则检测
+	        */
+	        validatedCheck: function(){
+	            if(!this.regex || (!this.val && !this.isrequired)){
+	                this.validated = true;
+	                return true;
+	            }
+	            this.validated = this.regex.test(this.val);
+	            if(!this.validated){
+	                this.vvalidatetext = this.validatetext;
+	            }
+	        },
+	        doValidate: function(){
+	            this.emptyCheck() && this.validatedCheck();
+	            return !this.isempty && this.validated;
+	        },
+	        setValidate: function(bool, msg){
+	            this.vvalidatetext = msg || this.vvalidatetext;
+	            this.validated = bool;
+	        },
+	        /*
+	        *清除所有验证信息,还原初始状态
+	        */
+	        clearValidate: function(){
+	            this.validated = true;
+	            this.isempty = false;
+	        },
+	        /*
+	        * 添加focus判断，解决IE下placeholder触发input事件bug
+	        */
+	        doKeyUp: function(e){
+	            if(!$(e.target).is(':focus')){
+	                return;
+	            }
+	            if(this.doValidate()){
+	                this.$dispatch('input', this.val);
+	                this.computeNum(this.val);
+	            }else{
+	                this.$dispatch('validatefail', this.val);
+	            }
+	        },
+	        doChange: function(e){
+	            this.$dispatch('change', this.val);
+	        },
+	        doUpload: function(e){
+	            if(this.fileInput.val()){
+	                this.fileForm.submit();
+	            }
+	        },        
+	        /*
+	        * keycode为"enter"触发事件
+	        */
+	        doEnter: function(e){
+	            this.$dispatch('enter', e, this.val);
+	        },
+	        reset: function () {
+	            this.currentUploadNum = 0;
+	            if (this.fileInput) {
+	                this.fileInput.val('');
+	                this.currentUploadNum = 0;
+	            }
+	            this.setValue('');
+	        },
+	        checkValueBeforeUpload: function () {
+	            if (this.maxUploadNum !== 0 && this.currentUploadNum + 1 > this.maxUploadNum) {
+	                dialog.alert('最多能上传 ' + this.maxUploadNum + ' 个文件！');
+	                return false;
+	            }
+	            var fileSize = '';
+	            if (!browser.isIE9()) {
+	                fileSize = this.fileInput[0].files[0].size;
+	                if (this.filemaxsize < fileSize) {
+	                    dialog.alert('最大能上传 ' + this.filemaxsize / (1024 * 1024) + 'M 文件！');
+	                    return false;
+	                }
+	            }
+	        }
+
+	    },
+	    watch: {
+	        'val': function(){
+	            // 兼容IE9-10下v-model bug
+	            if (browser.isIE9() || browser.isIE10()) {
+	                this.$body && this.$body.val(this.val);
+	            }
+	            var _self = this;
+	            if(_self.ticker){
+	                clearTimeout(_self.ticker);
+	            }
+	            _self.ticker = setTimeout(function(){
+	                _self.$dispatch('valuechange', _self.val);
+	                _self.ticker = null;
+	            }, 300);
+	        }
+	    }
+	});
+
+	Vue.filter('vtrim', {
+	    read: function(val){
+	        return val;
+	    },
+	    write: function(val){
+	        return val.trim();
+	    }
+	});
+
+	module.exports = Vue.component('vtextfield', Textfield);
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(24);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(9)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./textfield.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./textfield.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(8)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".textfield {\r\n    display: table;\r\n    height: 40px;\r\n    margin-bottom: 20px\r\n}\r\n\r\n.textfield.auto-height {\r\n    height: auto\r\n}\r\n\r\n.textfield>div {\r\n    float: left\r\n}\r\n\r\n.textfield .field-body input {\r\n    margin-bottom: 5px\r\n}\r\n\r\n.textfield .field-body span {\r\n    color: #f96868\r\n}\r\n\r\n.textfield .field-body .body-content {\r\n    position: relative\r\n}\r\n\r\n.textfield .field-body .numchange-tip {\r\n    position: absolute;\r\n    bottom: 4px;\r\n    right: 8px;\r\n    font-size: 9pt;\r\n    color: #d1d1d1\r\n}\r\n\r\n.textfield .after-tpl {\r\n    margin-top: 10px;\r\n    margin-left: 10px\r\n}\r\n\r\n.textfield textarea {\r\n    border: 1px solid transparent;\r\n    height: auto;\r\n    padding: 10px\r\n}\r\n\r\n.field-label {\r\n    padding-top: 10px\r\n}\r\n\r\n.field-label .required-tip {\r\n    color: #f96868;\r\n    margin-right: 3px\r\n}\r\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var jade = __webpack_require__(3);
+
+	module.exports = function template(locals) {
+	var buf = [];
+	var jade_mixins = {};
+	var jade_interp;
+
+	buf.push("<div :class=\"{'auto-height': vtype === 'textarea'}\" class=\"textfield\"><vfieldlabel :isshowlabel=\"!hidelabel\" :required=\"isrequired\" :text=\"fieldlabel\" :width=\"labelwidth\"></vfieldlabel><div v-bind:style=\"bodystyle\" class=\"field-body\"><template v-if=\"vtype === 'file'\"><form method=\"post\" :action=\"action\" enctype=\"multipart/form-data\"><input type=\"hidden\" name=\"purpose\" value=\"1\"><div class=\"tip\">{{ displaytext }}</div><input v-if=\"vtype === 'file'\" type=\"file\" :name=\"name\" :readOnly=\"readonly\" @change=\"doUpload\" placeholder=\"{{ pholder }}\" class=\"btn-file form-control\"></form></template><template v-else><textarea v-if=\"vtype === 'textarea'\" :rows=\"rows\" :name=\"name\" :readOnly=\"readonly\" placeholder=\"{{ pholder }}\" maxlength=\"{{ maxlength }}\" v-model=\"val | vtrim\" @input=\"doKeyUp | debounce 300\" @change=\"doChange\" @keyup.enter=\"doEnter\" class=\"form-control\"></textarea><input v-else :type=\"vtype\" :name=\"name\" :readOnly=\"readonly\" placeholder=\"{{ pholder }}\" v-model=\"val | vtrim\" maxlength=\"{{ maxlength }}\" @input=\"doKeyUp | debounce 300\" @change=\"doChange\" @keyup.enter=\"doEnter\" class=\"form-control\"><span v-if=\"showchange\" class=\"numchange-tip\"> 还可以输入 {{ contentlength }} 个字</span></template><span v-if=\"isrequired || regex\" v-show=\"isempty || !validated\">{{ vvalidatetext }}</span></div><div class=\"after-tpl\"><slot name=\"aftertpl\"></slot></div></div>");;return buf.join("");
+	}
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	* 分页组件: pager
+	* @params:
+	*       type: 分页类型（‘加载更多:more’和‘页码展示:page’），默认为页码展示
+	*       total: 总条数
+	*       pagesize: 每一页显示数
+	*       count: 一共多少页，默认为0
+	*       currentpage: 当前页，默认为0（第一页）
+	*       predisabled: 上一页按钮是否不可点击，默认为true
+	*       nextdisabled: 下一页按钮是否不可点击，默认为false
+	*/
+
+
+	__webpack_require__(27);
+	var tpl = __webpack_require__(29);
+
+	/*
+	* mixin
+	*/
+	var BaseMixin = __webpack_require__(16);
+
+	var Pager = Vue.extend({
+	    mixins: [BaseMixin],
+	    props: ['type', 'total', 'pagesize'],
+	    template: tpl(),
+	    data: function(){
+	        return {
+	            currentpage: 0,
+	            predisabled: false,
+	            nextdisabled: false,
+	            vtype: this.type || 'page'
+	        }
+	    },
+	    methods: {
+	        doPage: function(){
+	            this.$dispatch('pager', this.currentpage);
+	        },
+	        doPre: function(){
+	            this.currentpage--;
+	            this.doPage();
+	        },
+	        doNext: function(){
+	            this.currentpage++;
+	            this.doPage();
+	        },
+	        doJump: function(index){
+	            this.setCurrentPage(index);
+	            this.doPage();
+	        },
+	        setCurrentPage: function(index){
+	            this.currentpage = index;
+	        }
+	    },
+	    computed: {
+	        count: function(){
+	            this.total = this.total || 0;
+	            this.pagesize = this.pagesize || 10;
+	            return Math.ceil(this.total / this.pagesize);
+	        },
+	        predisabled: function(){
+	            return this.currentpage === 0 ? true : false;
+	        },
+	        nextdisabled: function(){
+	            return this.currentpage === this.count - 1 ? true : false;
+	        }
+	    }
+	});
+
+	module.exports = Vue.component('vpager', Pager);
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(28);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(9)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./pager.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./pager.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(8)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".pager {\r\n    text-align: center;\r\n    margin: 40px 0\r\n}\r\n\r\n.pager button {\r\n    height: 30px;\r\n    padding: 0 10px;\r\n    margin-right: 10px;\r\n    border: 1px solid #ececec;\r\n    background-color: #fff\r\n}\r\n\r\n.pager button.current {\r\n    color: #fff;\r\n    background-color: #1992fd\r\n}\r\n\r\n.pager button.btn-disabled {\r\n    cursor: not-allowed;\r\n    background-color: #cbd9e4\r\n}\r\n\r\n.pager button:focus {\r\n    outline: 0\r\n}\r\n\r\n.pager span {\r\n    margin-right: 10px\r\n}\r\n\r\n.pager .btn-more {\r\n    display: block;\r\n    width: 100%;\r\n    text-align: center;\r\n    background: #f0f1f3;\r\n    color: #999;\r\n    line-height: 30px;\r\n    margin: 15px auto;\r\n    margin-top: 0;\r\n    padding: 0;\r\n    cursor: pointer\r\n}\r\n\r\n.pager .btn-more i {\r\n    margin-left: 5px\r\n}\r\n\r\n.pager .btn-more:hover {\r\n    background-color: #e5e6e7\r\n}\r\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var jade = __webpack_require__(3);
+
+	module.exports = function template(locals) {
+	var buf = [];
+	var jade_mixins = {};
+	var jade_interp;
+
+	buf.push("<div v-if=\"total &gt; 0\" class=\"pager\"><template v-if=\"vtype === 'page'\"><button disabled=\"true\" v-if=\"predisabled\" class=\"btn-disabled\"><</button><button v-else @click=\"doPre\"><</button><template v-if=\"count &lt; 11\"><template v-for=\"n in count\"><button v-if=\"n === currentpage\" class=\"current\">{{ n+1 }}</button><button v-else @click=\"doJump(n)\">{{ n+1 }}</button></template></template><template v-else><template v-if=\"currentpage &lt; 6\"><template v-for=\"n in 8\"><button v-if=\"n === currentpage\" class=\"current\">{{ n+1 }}</button><button v-else @click=\"doJump(n)\">{{ n+1 }}</button></template><span>...</span><button @click=\"doJump(count-1)\">{{ count }}</button></template><template v-else><template v-if=\"currentpage &gt; count - 6\"><button @click=\"doJump(0)\">1</button><span>...</span><template v-for=\"n in 8\"><button v-if=\"count - (8 - n) === currentpage\" class=\"current\">{{ count - (8 - n) + 1 }}</button><button v-else @click=\"doJump(count - (8 - n))\">{{ count - (8 - n) + 1 }}</button></template></template><template v-else><button @click=\"doJump(0)\">1</button><button @click=\"doJump(1)\">2</button><span>...</span><button @click=\"doJump(currentpage -2)\">{{ currentpage -1 }}</button><button @click=\"doJump(currentpage -1)\">{{ currentpage }}</button><button class=\"current\">{{ currentpage + 1 }}</button><button @click=\"doJump(currentpage +1)\">{{ currentpage + 2 }}</button><button @click=\"doJump(currentpage +2)\">{{ currentpage + 3 }}</button><span>...</span><button @click=\"doJump(count-1)\">{{ count }}</button></template></template></template><button disabled=\"true\" v-if=\"nextdisabled\" class=\"btn-disabled\">></button><button v-else @click=\"doNext\">></button></template><template v-else><div @click=\"doNext\" v-if=\"!nextdisabled\" class=\"btn-more\"><span>加载更多</span><i class=\"fa fa-angle-double-down\"></i></div></template></div>");;return buf.join("");
 	}
 
 /***/ }

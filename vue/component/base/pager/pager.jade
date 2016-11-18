@@ -1,0 +1,43 @@
+div.pager(v-if="total > 0")
+    template(v-if="vtype === 'page'")
+        button.btn-disabled(disabled="true" v-if="predisabled") <
+        button(v-else @click="doPre") <
+        //- page小于10页（显示全部页码）
+        template(v-if="count < 11")
+            template(v-for="n in count")
+                button.current(v-if="n === currentpage") {{ n+1 }}
+                button(v-else @click="doJump(n)") {{ n+1 }}
+        template(v-else)
+            //- page大于10页，但当前页小于6，显示前1-8和最后一页的页码，中间用省略号
+            template(v-if="currentpage < 6")
+                template(v-for="n in 8")
+                    button.current(v-if="n === currentpage") {{ n+1 }}
+                    button(v-else @click="doJump(n)") {{ n+1 }}
+                span ...
+                button(@click="doJump(count-1)") {{ count }}
+            template(v-else)
+                //- page大于10页，且当前页大于倒数第三页，显示第一页和最后8页面，中间用省略号
+                template(v-if="currentpage > count - 6")
+                    button(@click="doJump(0)") 1
+                    span ...
+                    template(v-for="n in 8")
+                        button.current(v-if="count - (8 - n) === currentpage") {{ count - (8 - n) + 1 }}
+                        button(v-else @click="doJump(count - (8 - n))") {{ count - (8 - n) + 1 }}
+                //- page大于10页，且当前页大于6小于倒数第三页，显示第一页、第二页、最后一页、当前页及当前页前后两页，其他用省略号
+                template(v-else)
+                    button(@click="doJump(0)") 1
+                    button(@click="doJump(1)") 2
+                    span ...
+                    button(@click="doJump(currentpage -2)") {{ currentpage -1 }}
+                    button(@click="doJump(currentpage -1)") {{ currentpage }}
+                    button.current {{ currentpage + 1 }}
+                    button(@click="doJump(currentpage +1)") {{ currentpage + 2 }}
+                    button(@click="doJump(currentpage +2)") {{ currentpage + 3 }}
+                    span ...
+                    button(@click="doJump(count-1)") {{ count }}
+        button.btn-disabled(disabled="true" v-if="nextdisabled") >
+        button(v-else @click="doNext") >
+    template(v-else)
+        div.btn-more(@click="doNext" v-if="!nextdisabled")
+            span 加载更多
+            i.fa.fa-angle-double-down

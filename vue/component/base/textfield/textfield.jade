@@ -1,2 +1,15 @@
-div.textfiled
-	
+div.textfield(:class="{'auto-height': vtype === 'textarea'}")
+    vfieldlabel(:isshowlabel="!hidelabel",:required="isrequired",:text="fieldlabel",:width="labelwidth")
+    div.field-body(v-bind:style="bodystyle")
+        template(v-if="vtype === 'file'")
+            form(method="post", :action="action", enctype="multipart/form-data")
+                input(type="hidden", name="purpose", value="1")
+                div.tip {{ displaytext }}
+                input.btn-file.form-control(v-if="vtype === 'file'", type="file", :name="name", :readOnly="readonly", @change="doUpload" placeholder="{{ pholder }}")
+        template(v-else)
+            textarea.form-control(v-if="vtype === 'textarea'", :rows="rows", :name="name", :readOnly="readonly", placeholder="{{ pholder }}", maxlength="{{ maxlength }}", v-model="val | vtrim", @input="doKeyUp | debounce 300", @change="doChange", @keyup.enter="doEnter")
+            input.form-control(v-else, :type="vtype", :name="name", :readOnly="readonly", placeholder="{{ pholder }}", v-model="val | vtrim", maxlength="{{ maxlength }}", @input="doKeyUp | debounce 300", @change="doChange", @keyup.enter="doEnter")
+            span.numchange-tip(v-if="showchange")  还可以输入 {{ contentlength }} 个字
+        span(v-if="isrequired || regex" v-show="isempty || !validated") {{ vvalidatetext }}
+    div.after-tpl
+        slot(name="aftertpl")

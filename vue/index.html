@@ -12,7 +12,10 @@
  <vcheckbox v-ref:secretjob fieldlabel="dsdasd" is-Checked="true" ></vcheckbox>
  <vbutton theme="primary" text="save"></vbutton>
  <vcombobox filedlabel="aaa" :store="jobStatusStore" width="200" allowedit="true"></vcombobox>
+ <vcombobox filedlabel="bbb" isremote="true" url="http://localhost:8080/json" width="200" isfilter="true" allowedit="true"></vcombobox>
  <vfieldlabel text="aaa" width="200"></vfieldlabel>
+ <vtextfield text="aaa" width="200"></vtextfield>
+ <vpager total="150" pagesize="10"></vpager>
 </div>
 </body>
 </html>
@@ -34,7 +37,8 @@
         },{
             value: 2,
             text: '已关闭'
-        }]
+        }],
+        jobStatusStore1:"'',选择职位状态|1,进行中|2,已关闭"
       },
       methods: {
          init: function() {

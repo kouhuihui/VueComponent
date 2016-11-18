@@ -1,0 +1,51 @@
+.pager {
+    text-align: center;
+    margin: 40px 0
+}
+
+.pager button {
+    height: 30px;
+    padding: 0 10px;
+    margin-right: 10px;
+    border: 1px solid #ececec;
+    background-color: #fff
+}
+
+.pager button.current {
+    color: #fff;
+    background-color: #1992fd
+}
+
+.pager button.btn-disabled {
+    cursor: not-allowed;
+    background-color: #cbd9e4
+}
+
+.pager button:focus {
+    outline: 0
+}
+
+.pager span {
+    margin-right: 10px
+}
+
+.pager .btn-more {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #f0f1f3;
+    color: #999;
+    line-height: 30px;
+    margin: 15px auto;
+    margin-top: 0;
+    padding: 0;
+    cursor: pointer
+}
+
+.pager .btn-more i {
+    margin-left: 5px
+}
+
+.pager .btn-more:hover {
+    background-color: #e5e6e7
+}
