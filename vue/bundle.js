@@ -50,6 +50,7 @@
 	__webpack_require__(18);
 	__webpack_require__(22);
 	__webpack_require__(26);
+	__webpack_require__(30);
 
 /***/ },
 /* 1 */
@@ -1503,6 +1504,7 @@
 	    },
 	    computed: {
 	        count: function(){
+	            debugger;
 	            this.total = this.total || 0;
 	            this.pagesize = this.pagesize || 10;
 	            return Math.ceil(this.total / this.pagesize);
@@ -1570,6 +1572,210 @@
 	var jade_interp;
 
 	buf.push("<div v-if=\"total &gt; 0\" class=\"pager\"><template v-if=\"vtype === 'page'\"><button disabled=\"true\" v-if=\"predisabled\" class=\"btn-disabled\"><</button><button v-else @click=\"doPre\"><</button><template v-if=\"count &lt; 11\"><template v-for=\"n in count\"><button v-if=\"n === currentpage\" class=\"current\">{{ n+1 }}</button><button v-else @click=\"doJump(n)\">{{ n+1 }}</button></template></template><template v-else><template v-if=\"currentpage &lt; 6\"><template v-for=\"n in 8\"><button v-if=\"n === currentpage\" class=\"current\">{{ n+1 }}</button><button v-else @click=\"doJump(n)\">{{ n+1 }}</button></template><span>...</span><button @click=\"doJump(count-1)\">{{ count }}</button></template><template v-else><template v-if=\"currentpage &gt; count - 6\"><button @click=\"doJump(0)\">1</button><span>...</span><template v-for=\"n in 8\"><button v-if=\"count - (8 - n) === currentpage\" class=\"current\">{{ count - (8 - n) + 1 }}</button><button v-else @click=\"doJump(count - (8 - n))\">{{ count - (8 - n) + 1 }}</button></template></template><template v-else><button @click=\"doJump(0)\">1</button><button @click=\"doJump(1)\">2</button><span>...</span><button @click=\"doJump(currentpage -2)\">{{ currentpage -1 }}</button><button @click=\"doJump(currentpage -1)\">{{ currentpage }}</button><button class=\"current\">{{ currentpage + 1 }}</button><button @click=\"doJump(currentpage +1)\">{{ currentpage + 2 }}</button><button @click=\"doJump(currentpage +2)\">{{ currentpage + 3 }}</button><span>...</span><button @click=\"doJump(count-1)\">{{ count }}</button></template></template></template><button disabled=\"true\" v-if=\"nextdisabled\" class=\"btn-disabled\">></button><button v-else @click=\"doNext\">></button></template><template v-else><div @click=\"doNext\" v-if=\"!nextdisabled\" class=\"btn-more\"><span>加载更多</span><i class=\"fa fa-angle-double-down\"></i></div></template></div>");;return buf.join("");
+	}
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	* 列表组件: list
+	* @params:
+	*       store：数据源
+	*       isremote: 是否远程加载数据，默认为false
+	*       autoload: 是否自动加载数据，默认为true
+	*       rowtpl: row模板
+	*       ispager: 是否分页，默认为false
+	*       pagertype: 分页类型（‘加载更多:more’和‘页码展示:page’），默认为页码展示
+	*       beforerowrender: 在row render前的方法
+	*       afterload: 数据加载完毕后执行的方法
+	*/
+	__webpack_require__(31);
+	var tpl = __webpack_require__(33);
+	var rowTpl = __webpack_require__(34);
+
+	/*
+	* 依赖分页组件
+	*/
+	__webpack_require__(26);
+	var List = Vue.extend({
+		props: ['store', 'rowtpl', 'isremote', 'url', 'params', 'ispager', 'pagertype', 'pagesize', 'beforerowrender', 'afterload', 'autoload'],
+		template: tpl(),
+		data: function () {
+			return {
+				total: 0,
+				pagertype: this.pagertype || 'page',
+				vispager: this.ispager || false,
+				vpagesize: this.pagesize || 10,
+				autoload: this.autoload === true || this.autoload === "false"
+			}
+		},
+		methods: {
+			init: function(){
+	            debugger;
+				this.rowTpl = this.rowtpl || rowTpl;
+				this.body = $(this.$el).find('ul');
+				this.pager = this.$refs.pager;
+	            this.beforeRowRender = this.beforerowrender || function(record){return record;};
+				if(this.autoload){
+	                this.load();
+	            }
+	            this.initEvents();
+			},
+			initEvents: function(){
+				var _self = this;
+				this.pager && this.pager.$on('pager', function(data){
+	                _self.params.start = data * _self.vpagesize;
+	                _self.load();
+	            });
+			},
+			parseParams: function(){
+				var url = '?';
+				for (var i in this.params) {
+					url += '&' + i + '=' + this.params[i]
+				}
+				return url;
+			},
+			addRows: function (records) {
+	            records = records || [];
+	            for(var i = 0, len = records.length; i < len; i++){
+	                var $row = this._createRow(records[i], i);
+	                this.body.append($row);
+	            }
+	        },
+	        _createRow: function(record, index){
+	            record = this.beforeRowRender(record);
+	            var row  = this.rowTpl({
+	                data: record,
+	                columns: this.columns
+	            });
+	            var $row = $(row);
+	            if(index % 2 !== 0){
+	                $row.addClass('active');
+	            }
+	            $row.data('record', record);
+	            this._bindEvents($row, record);
+	            return $row;
+	        },
+	        _empty: function(){
+	            this.body.html('');
+	        },
+	        _bindEvents: function(row, record){
+	            var _self = this;
+	            // row click
+	            row.on('click', function(){
+	                _self.$dispatch('rowclick', row, record);
+	            });
+	            row.find('.btn').on('click', function(){
+	                var $this = $(this);
+	                if($this.attr('disabled')){
+	                    return;
+	                }
+	                _self.$dispatch($this.data('action'), $this, record);
+	            });
+	        },
+			getStoreLocal: function(){
+
+			},
+			getStoreAsync: function(params, cb){
+				this.params = params || this.params || {
+	                start: 0,
+	                take: this.vpagesize
+	            };
+	            var _self = this, url = this.url + this.parseParams();
+	            $.get(url,function(rtn){
+	            	if(!rtn.succeeded){
+	            		alert(rtn.Message)
+	            	};
+	            	_self.total = rtn.data.total;
+	            	if (_self.pagertype === 'page') {
+	                    _self._empty();
+	                }
+	                _self.addRows(rtn.data.list);
+	                cb && cb(rtn);
+	            })
+			},
+			load: function(params, cb){
+				if(!this.isremote || this.isremote === 'false' || !this.url){
+					this.getStoreLocal();
+				}else{
+					this.getStoreAsync(params, cb);
+				}
+			}
+		},
+	    ready: function(){
+	        this.init();
+	    }
+	})
+
+	module.exports = Vue.component('vlist', List);
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(32);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(9)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./list.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./list.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(8)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "\r\n.list ul {\r\n    list-style-type: none;\r\n    margin: 0;\r\n    padding: 0\r\n}\r\n\r\n.list ul li {\r\n    display: table;\r\n    width: 100%;\r\n    padding: 40px 20px;\r\n    border-bottom: 1px solid #ececec\r\n}\r\n\r\n.list ul li:hover {\r\n    background: #f9f9f9\r\n}\r\n\r\n.list ul .list-col {\r\n    display: table-cell;\r\n    vertical-align: middle\r\n}\r\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var jade = __webpack_require__(3);
+
+	module.exports = function template(locals) {
+	var buf = [];
+	var jade_mixins = {};
+	var jade_interp;
+
+	buf.push("<div class=\"list\"><ul></ul><vpager v-ref:pager v-if=\"vispager\" :total=\"total\" :type=\"pagertype\" :pagesize=\"vpagesize\"></vpager></div>");;return buf.join("");
+	}
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var jade = __webpack_require__(3);
+
+	module.exports = function template(locals) {
+	var buf = [];
+	var jade_mixins = {};
+	var jade_interp;
+	;var locals_for_with = (locals || {});(function (data) {
+	buf.push("<li class=\"clearfix\"><div class=\"list-col pull-left\"><a" + (jade.attr("href", "/job/" + ( data.jobId ) + "", true, true)) + " class=\"text-primary\"> " + (jade.escape((jade_interp =  data.jobName ) == null ? '' : jade_interp)) + " (" + (jade.escape((jade_interp =  data.code ) == null ? '' : jade_interp)) + ")</a></div></li>");}.call(this,"data" in locals_for_with?locals_for_with.data:typeof data!=="undefined"?data:undefined));;return buf.join("");
 	}
 
 /***/ }

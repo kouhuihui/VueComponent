@@ -53,6 +53,7 @@ var Pager = Vue.extend({
     },
     computed: {
         count: function(){
+            debugger;
             this.total = this.total || 0;
             this.pagesize = this.pagesize || 10;
             return Math.ceil(this.total / this.pagesize);
