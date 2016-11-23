@@ -12,13 +12,14 @@
  <vcheckbox v-ref:secretjob fieldlabel="dsdasd" is-Checked="true" ></vcheckbox>
  <vbutton theme="primary" text="save"></vbutton>
  <vcombobox filedlabel="aaa" :store="jobStatusStore" width="200" allowedit="true"></vcombobox>
- <vcombobox filedlabel="bbb" isremote="true" url="http://localhost:8080/json" width="200" isfilter="true" allowedit="true"></vcombobox>
+ <vcombobox filedlabel="bbb" isremote="true" url="http://localhost:8080/json.json" width="200" isfilter="true" allowedit="true"></vcombobox>
  <vfieldlabel text="aaa" width="200"></vfieldlabel>
  <vtextfield text="aaa" width="200"></vtextfield>
- <vpager total="150" pagesize="10"></vpager>
+ <vlist v-ref:list autoload="false" url="http://localhost:8080/json1.json" isremote="true" ispager="true" :rowtpl="rowTpl"></vlist>
 </div>
 </body>
 </html>
+
 
 <script src="node_modules/vue/dist/vue.js" ></script>
 <script src="public/js/lib/jquery-1.9.1.min.js" ></script>

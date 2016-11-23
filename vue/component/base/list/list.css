@@ -1,0 +1,22 @@
+
+.list ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0
+}
+
+.list ul li {
+    display: table;
+    width: 100%;
+    padding: 40px 20px;
+    border-bottom: 1px solid #ececec
+}
+
+.list ul li:hover {
+    background: #f9f9f9
+}
+
+.list ul .list-col {
+    display: table-cell;
+    vertical-align: middle
+}
